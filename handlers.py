@@ -11,9 +11,16 @@ def is_channel_or_group(chat):
     return chat.title != None
 
 
+def init_forward_bot_variables_in_user(user):
+    if not hasattr(user, "forward_list"):
+        user.forward_list = []
+        user.link_of_chats_waiting_to_be_added = []
+
 def start(update, context):
-    logger.info("started")
-    update.message.reply_text('Hi!')
+    user = update.effective_user
+    init_forward_bot_variables_in_user(user)
+    text = "I'm forward bot"
+    update.message.reply_text(text)
 
 
 def unauthorized_access(update, context):
@@ -27,12 +34,14 @@ def reply_user_id(update, context):
     update.message.reply_text(text)
 
 
-def add_chat_to_forward_list (bot, chat):
-    bot.forward_list.append(chat)
+def add_chat_to_forward_list (user, chat):
+    user.forward_list.append(chat)
 
 
-def remove_chat_to_forward_list (bot, chat):
-    bot.forward_list.remove(chat)
+def remove_chat_to_forward_list (user, chat):
+    user.forward_list.remove(chat)
+    chat.leave()
+
 
 
 def add_this_group_to_forward_list_and_reply_the_result(update, context):
@@ -66,7 +75,7 @@ def remove_this_group_to_forward_list_and_reply_the_result (update, context):
 
 
 def view_forward_list (update, context):
-    forward_list = context.bot.forward_list
+    forward_list = update.effective_user.forward_list
     forward_list_formated = prettify_forward_list(forward_list)
     text = "this are the groups in forward list:" + forward_list_formated
     update.message.reply_text(text)
@@ -90,6 +99,10 @@ def forward_message_for_all_chats_in_forward_list( update, context):
 def prettify_forward_list (forward_list):
     result = "\n"
     for chat in forward_list:
-        result += " - " + chat.title + "\n"
+        result += chat.title + "\n"
     return result
+
+def test_handler_base (update, context):
+    text = "User added:" + (update.message.new_chat_members)[0].first_name
+    update.message.reply_text(text)
 
