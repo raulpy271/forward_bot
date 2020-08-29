@@ -80,6 +80,12 @@ def remove_chat_to_forward_list (user, chat):
     chat.leave()
 
 
+def remove_chat_to_waiting_list (user, title):
+    user_id_in_str = str(user.id)
+    (forwarding_list_of_all_users[user_id_in_str][
+        "title_of_chats_waiting_to_be_added"]).remove(title)
+
+
 
 def add_group_title_to_waiting_list(update, context):
     user = update.effective_user
@@ -92,8 +98,6 @@ def add_group_title_to_waiting_list(update, context):
     update.message.reply_text(text)
     
 
-def bot_added_to_group_handler (update, context):
-    pass
 
 
 def remove_group_to_forward_list (update, context):
@@ -118,9 +122,14 @@ def remove_group_to_forward_list (update, context):
 
 def view_forward_list (update, context):
     user = update.effective_user
-    forward_list = get_forward_list(user)
-    forward_list_formated = prettify_forward_list(forward_list)
-    text = "this are the groups in forward list:" + forward_list_formated
+    user_id_in_str = str(user.id)
+    if user_id_in_str in forwarding_list_of_all_users:
+        forward_list = get_forward_list(user)
+        forward_list_formated = prettify_forward_list(forward_list)
+        text = "this are the groups in forward list:" + forward_list_formated
+    else:
+        text = """You don't have a forwarding list yet. 
+            Call the /start command to see how use this bot"""
     update.message.reply_text(text)
 
 
@@ -154,10 +163,12 @@ def prettify_forward_list (forward_list):
         result += chat.title + "\n"
     return result
 
-def test_handler_base (update, context):
+
+def add_group_to_forward_list(update, context):
     user = update.effective_user
     chat = update.effective_chat
     add_chat_to_forward_list(user, chat)
-    text = "User added:" + (update.message.new_chat_members)[0].first_name
-    update.message.reply_text(text)
+    remove_chat_to_waiting_list(user, chat.title)
+    text = "chat added to forward list"
+    user.send_message(text)
 
