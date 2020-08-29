@@ -6,19 +6,44 @@ logging.basicConfig(
     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+forwarding_list_of_all_users = {
+        "12345" :
+        {
+            "forward_list": [],
+            "title_of_chats_waiting_to_be_added": []
+        }
+    } 
+
+def get_forward_list(user):
+    user_id_in_str = str(user.id)
+    forward_list = forwarding_list_of_all_users[
+        user_id_in_str]["forward_list"]
+    return forward_list
+
 
 def is_channel_or_group(chat):
     return chat.title != None
 
 
-def init_forward_bot_variables_in_user(user):
-    if not hasattr(user, "forward_list"):
-        user.forward_list = []
-        user.link_of_chats_waiting_to_be_added = []
+def search_chat_with_this_title(list_of_chats, title):
+    for chat in list_of_chats:
+        if chat.title == title:
+            return chat
+    return None
+
+
+def create_users_variables_in_forwarding_list_of_all_users(user):
+    user_id_in_str = str(user.id)
+    if not user_id_in_str in forwarding_list_of_all_users:
+        forwarding_list_of_all_users[user_id_in_str] = {
+            "forward_list": [],
+            "title_of_chats_waiting_to_be_added": []
+        }
+
 
 def start(update, context):
     user = update.effective_user
-    init_forward_bot_variables_in_user(user)
+    create_users_variables_in_forwarding_list_of_all_users(user)
     text = "I'm forward bot"
     update.message.reply_text(text)
 
@@ -31,51 +56,69 @@ def unauthorized_access(update, context):
 def reply_user_id(update, context):
     user = update.effective_user
     text = "your id is: " + str(user.id)
+    text = text + "\n\n" + str(forwarding_list_of_all_users)
     update.message.reply_text(text)
 
 
+def add_chat_to_waiting_list (user, title):
+    user_id_in_str = str(user.id)
+    (forwarding_list_of_all_users[user_id_in_str][
+        "title_of_chats_waiting_to_be_added"]).append(title)
+    
+
+
 def add_chat_to_forward_list (user, chat):
-    user.forward_list.append(chat)
+    user_id_in_str = str(user.id)
+    (forwarding_list_of_all_users[user_id_in_str][
+        "forward_list"]).append(chat)
 
 
 def remove_chat_to_forward_list (user, chat):
-    user.forward_list.remove(chat)
+    user_id_in_str = str(user.id)
+    (forwarding_list_of_all_users[user_id_in_str][
+        "forward_list"]).remove(chat)
     chat.leave()
 
 
 
-def add_this_group_to_forward_list_and_reply_the_result(update, context):
-    chat = update.effective_chat
-    bot = context.bot
-    if is_channel_or_group(chat):
-        if not chat in bot.forward_list:
-            add_chat_to_forward_list(context.bot, chat)
-            text = "this chat was successfully added"
-        else:
-            text = "this chat was already on the list"
-    else:
-        text = "This chat no has a group o channel"
+def add_group_title_to_waiting_list(update, context):
+    user = update.effective_user
+    user_id_in_str = str(user.id)
+    if not user_id_in_str in forwarding_list_of_all_users:
+        create_users_variables_in_forwarding_list_of_all_users(user)
+    title = " ".join(context.args)
+    add_chat_to_waiting_list(user, title)
+    text = "Link stored, for end this process, add this bot in your chat"
     update.message.reply_text(text)
+    
+
+def bot_added_to_group_handler (update, context):
+    pass
 
 
-def remove_this_group_to_forward_list_and_reply_the_result (update, context):
-    chat = update.effective_chat
-    bot = context.bot
-    if is_channel_or_group(chat):
-        if chat in bot.forward_list:
-            remove_chat_to_forward_list(context.bot, chat)
-            text = "this chat was successfully removed"
+def remove_group_to_forward_list (update, context):
+    user = update.effective_user
+    title = " ".join(context.args)
+    user_id_in_str = str(user.id)
+    if user_id_in_str in forwarding_list_of_all_users:
+        forward_list = forwarding_list_of_all_users[
+            user_id_in_str][ "forward_list"]
+        chat = search_chat_with_this_title(forward_list, title)
+        if chat == None:
+            text = "Invalid Link or this link not in the list"
         else:
-            text = "this chat is not on the list"
+            remove_chat_to_forward_list(user, chat)
+            text = "Chat removed, i'm left this chat now"
     else:
-        text = "This chat no has a group o channel"
+        text = """You don't have a forwarding list yet. 
+            Call the /start command to see how use this bot"""
     update.message.reply_text(text)
-
 
 
 
 def view_forward_list (update, context):
-    forward_list = update.effective_user.forward_list
+    user = update.effective_user
+    forward_list = get_forward_list(user)
     forward_list_formated = prettify_forward_list(forward_list)
     text = "this are the groups in forward list:" + forward_list_formated
     update.message.reply_text(text)
@@ -91,9 +134,18 @@ def forward_message_for_chat (update, context, chat_id):
 
 
 def forward_message_for_all_chats_in_forward_list( update, context):
-    list_of_chats = context.bot.forward_list
-    for chat in list_of_chats:
-        forward_message_for_chat (update, context, chat.id)
+    user = update.effective_user
+    user_id_in_str = str(user.id)
+    if user_id_in_str in forwarding_list_of_all_users:
+        text = "Forwarding message"
+        list_of_chats = get_forward_list(user)
+        for chat in list_of_chats:
+            forward_message_for_chat (update, context, chat.id)
+    else:
+        text = """You don't have a forwarding list yet. 
+            Call the /start command to see how use this bot"""
+    update.message.reply_text(text)
+
 
 
 def prettify_forward_list (forward_list):
@@ -103,6 +155,9 @@ def prettify_forward_list (forward_list):
     return result
 
 def test_handler_base (update, context):
+    user = update.effective_user
+    chat = update.effective_chat
+    add_chat_to_forward_list(user, chat)
     text = "User added:" + (update.message.new_chat_members)[0].first_name
     update.message.reply_text(text)
 
