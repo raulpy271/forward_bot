@@ -73,11 +73,17 @@ Call the /start command to see how use this bot""")
     return execute_if_user_have_forward_list_and_reply_to_user
 
 
-def execute_if_bot_are_new_member(calback):
+def execute_if_bot_are_new_member(callback):
+    def get_users_ids(users):
+        users_ids = list(
+            map( (lambda user : user.id), users) )
+        return users_ids
+
+
     def execute_if_bot_are_in_new_members_list (update, context):
-        bot = context.bot
+        bot_id = context.bot.id
         message = update.message
-        if bot in message.new_chat_members:
+        if bot_id in get_users_ids(message.new_chat_members):
             callback(update, context)
         else: return
 
