@@ -1,3 +1,6 @@
 __*
-*.vim*
 *.json
+
+#vim files:
+*.vim*
+*.swp
