@@ -2,6 +2,7 @@ from user_info.user_info import token
 from telegram.ext import Updater
 from handlers import (
     start_command,
+    help_command,
     show_list_command,
     add_title_to_waiting_list_command, 
     remove_group_to_forward_list_command,
@@ -15,6 +16,7 @@ def main():
 
 
     dp.add_handler(start_command)
+    dp.add_handler(help_command)
     dp.add_handler(show_list_command)
     dp.add_handler(add_title_to_waiting_list_command)
     dp.add_handler(remove_group_to_forward_list_command)

@@ -6,7 +6,6 @@ from tools.callbecks_helper import (
     get_forward_list,
     get_waiting_list,
     prettify_forward_list,
-    user_have_forward_list,
     execute_if_bot_are_new_member,
     execute_if_user_have_forward_list)
 
@@ -14,13 +13,34 @@ from tools.callbecks_helper import (
 start_text = (
 """Hello World, I'm forward_bot!
 I will help you forward your messages to many groups and channels at once.
-Type \help to see how make it.
+Type /help to see how make it.""")
+
+
+help_text = (
+"""To forward your messages you should put your chats in the "forward list". and so, send me a message that you want forward. 
+
+For see which chats are in the "forward list" type /show.
+
+For add a chat you should use the /add command and next add the bot in your chat.
+
+If you want remove a chat of your list you can use the /remove command.
+
+this are the syntax of commands:
+
+/add Chat_Title
+/remove Chat_Title
 """)
+
 
 def start(update, context):
     user = update.effective_user
     create_users_variables_in_forwarding_list_of_all_users(user)
-    update.message.reply_text(start_text, parse_mode="Markdown")
+    update.message.reply_text(start_text)
+
+
+def help_message(update, context):
+    user = update.effective_user
+    update.message.reply_text(help_text)
 
 
 def add_chat_to_waiting_list (user, title):
@@ -45,7 +65,7 @@ def add_group_title_to_waiting_list(update, context):
     create_users_variables_in_forwarding_list_of_all_users(user)
     title = " ".join(context.args)
     add_chat_to_waiting_list(user, title)
-    text = "Link stored, for end this process, add this bot in your chat"
+    text = "Chat title stored, for end this process, add this bot as a member of your chat"
     update.message.reply_text(text)
 
 
