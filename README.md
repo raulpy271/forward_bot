@@ -1,7 +1,7 @@
 # forward bot
 
 a telegram bot that automates the message forwarding.
-This bot was written using the module [python-telagram-bot](www.python-telegram-bot.org).
+This bot was written using the module [python-telagram-bot](https://www.python-telegram-bot.org).
 
 ## Example using this bot
 
