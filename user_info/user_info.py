@@ -1,44 +1,25 @@
-import json
+from json import load
 
 
 class User_Info():
     def __init__(self):
-        self.user_info = self.__load_user_info("user_info/user_info.json")
-        self.is_restrict = self.user_info["restrict_for_only_admins"] 
+        # json with your token
+        user_info_directory = "user_info/.user_info.json" 
+        self.user_info = self.__load_user_info(user_info_directory)
+
+
         self.token = self.user_info["token"]
-        if self.is_restrict:
-            self.admins = self.user_info["admins"]
-            self.admins_id = self.__make_admins_id_list()
+        self.forwarding_list_of_all_users = self.user_info[
+            "forwarding_list_of_all_users"]
 
 
     def __load_user_info (self, json_directory):
         with open(json_directory, "r") as user_info_json:
-            return json.load(user_info_json)
-
-
-    def __make_admins_id_list (self):
-        admins_dic = self.admins
-        admins_id = list( 
-            map( ( lambda admins : int(admins["user_id"]) ), admins_dic))
-        return admins_id
-
-
-    def get_admins_id(self):
-        return self.admins_id
-
-
-    def add_admins_id(self, user_id):
-        self.admins_id.append(user_id)
+            return load(user_info_json)
 
 
 user_info = User_Info()
 token = user_info.token
+forwarding_list_of_all_users = user_info.forwarding_list_of_all_users
 
 
-forwarding_list_of_all_users = {
-        "12345" :
-        {
-            "forward_list": [],
-            "title_of_chats_waiting_to_be_added": []
-        }
-    } 

@@ -1,5 +1,7 @@
 __*
-*.json
+
+# my token json
+user_info/.user_info.json
 
 #vim files:
 *.vim*

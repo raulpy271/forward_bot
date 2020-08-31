@@ -1,0 +1,16 @@
+{
+
+    "token"  : "YOUR_TOKEN_HERE",
+
+    "forwarding_list_of_all_users" : 
+
+    {
+        "User_ID" :
+        {
+            "forward_list": [],
+            "title_of_chats_waiting_to_be_added": []
+        }
+    } 
+
+
+}
